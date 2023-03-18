@@ -1,0 +1,14 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs
+provisioner: nfs.csi.k8s.io
+parameters:
+  server: 192.168.2.101
+  share: /kubenfs
+  csi.storage.k8s.io/provisioner-secret-name: "mount-options"
+  csi.storage.k8s.io/provisioner-secret-namespace: "default"
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+mountOptions:
+  - nfsvers=4.1
