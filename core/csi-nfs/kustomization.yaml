@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kube-system
+
+resources:
+- resources/csi-nfs-controller.yaml
+- resources/csi-nfs-driverinfo.yaml
+- resources/csi-nfs-node.yaml
+- resources/rbac-csi-nfs.yaml
+- resources/nfs-csi-storageclass.yaml

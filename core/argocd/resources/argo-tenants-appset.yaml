@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: tenants-appset
+  namespace: kube-argocd
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/grant-cl/homekube.git
+      revision: main
+      directories:
+      - path: tenants/*/projects/*
+  template:
+    metadata:
+      name: '{{path.basename}}'
+    spec:
+      project: tenants
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        retry:
+          limit: 15
+          backoff:
+            duration: 15s
+            factor: 2
+            maxDuration: 5m
+      source:
+        repoURL: https://github.com/grant-cl/homekube.git
+        targetRevision: main
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+

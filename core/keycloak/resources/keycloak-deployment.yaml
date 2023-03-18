@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  labels:
+    app: keycloak
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+      - name: keycloak
+        image: quay.io/keycloak/keycloak:21.0.1
+        args: ["start-dev"]
+        env:
+        - name: KEYCLOAK_ADMIN
+          value: "admin"
+        - name: KEYCLOAK_ADMIN_PASSWORD
+          valueFrom: 
+            secretKeyRef:
+              name: keycloak-env-secrets
+              key: KEYCLOAK_ADMIN_PASSWORD
+        - name:	KC_DB
+          value: "mariadb"
+        - name:	KC_DB_USERNAME
+          value: "keycloak"
+        - name:	KC_DB_PASSWORD
+          valueFrom: 
+            secretKeyRef:
+              name: keycloak-env-secrets
+              key: KC_DB_PASSWORD
+        - name: KC_DB_URL
+          value: "jdbc:mariadb://127.0.0.1/keycloak"
+        - name: KC_PROXY
+          value: "edge"
+        ports:
+        - name: http
+          containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /realms/master
+            port: 8080
+      - name: keycloakmariadb
+        image: mariadb
+        ports:
+        - name: keycloakdb
+          containerPort: 3306 
+        env:
+        #- name: MARIADB_RANDOM_ROOT_PASSWORD
+        - name: MARIADB_ALLOW_EMPTY_ROOT_PASSWORD
+          value: "0" # if it is 1 and root_password is set, root_password takes precedance
+        - name: MARIADB_ROOT_PASSWORD
+          value: secret
+        volumeMounts:
+        # The volume mounts  for the container
+          - mountPath: /var/lib/mysql
+            name: db-data
+      # Volumes attached to the pod
+      volumes:
+        - name: db-data
+          persistentVolumeClaim:
+            # reference the PersistentVolumeClaim
+            claimName: keycloak-mariadb-pvc
+       
+
