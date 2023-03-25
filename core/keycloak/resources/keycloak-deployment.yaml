@@ -18,7 +18,7 @@ spec:
       containers:
       - name: keycloak
         image: quay.io/keycloak/keycloak:21.0.1
-        args: ["start-dev"]
+        args: ["start --hostname=home.keycloak --https-certificate-file=/tlskeys/tls.crt --https-certificate-key-file=/tlskeys/tls.key"]
         env:
         - name: KEYCLOAK_ADMIN
           value: "admin"
@@ -43,30 +43,36 @@ spec:
         ports:
         - name: http
           containerPort: 8080
+        - name: https
+          containerPort: 8443
         readinessProbe:
           httpGet:
             path: /realms/master
             port: 8080
+        volumeMounts:
+          - mountPath: /tlskeys
+            name: keycloak-tls
       - name: keycloakmariadb
         image: mariadb
         ports:
         - name: keycloakdb
           containerPort: 3306 
         env:
-        #- name: MARIADB_RANDOM_ROOT_PASSWORD
         - name: MARIADB_ALLOW_EMPTY_ROOT_PASSWORD
-          value: "0" # if it is 1 and root_password is set, root_password takes precedance
+          value: "0" 
         - name: MARIADB_ROOT_PASSWORD
           value: secret
         volumeMounts:
-        # The volume mounts  for the container
           - mountPath: /var/lib/mysql
             name: db-data
       # Volumes attached to the pod
       volumes:
         - name: db-data
           persistentVolumeClaim:
-            # reference the PersistentVolumeClaim
             claimName: keycloak-mariadb-pvc
+        - name: keycloak-tls
+          secret:
+            secretName: keycloak-tls
+            optional: true
        
 
