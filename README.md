@@ -6,7 +6,7 @@ kubectl create secret generic smbcreds --from-literal username=USERNAME --from-l
 
 CREATE DATABASE keycloak CHARACTER SET utf8 COLLATE utf8_unicode_ci
 
-CREATE USER 'keycloak'@'%' IDENTIFIED BY 'PASSWORD';
+CREATE USER 'keycloak'@'%' IDENTIFIED BY 'keycloak';
 
 GRANT ALL PRIVILEGES ON keycloak.* TO 'keycloak'@'%';
 
